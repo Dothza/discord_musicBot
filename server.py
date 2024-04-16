@@ -1,5 +1,6 @@
 import asyncio
 import discord
+from download import download
 from discord.ext import commands
 import logging
 
@@ -19,6 +20,7 @@ class DiscordPlay(commands.Cog):
 
     @commands.command(name="play_audio")
     async def music(self, ctx, url):
+        await download(url)
         await ctx.send("Команда получена")
 
 
