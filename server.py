@@ -4,7 +4,7 @@
 import asyncio
 import discord
 import discord.message
-from download import download
+from data.download import download
 from discord.ext import commands
 import logging
 from discord.utils import get
@@ -30,7 +30,7 @@ class DiscordPlay(commands.Cog):
             await voice.move_to(channel)
         else:
             voice = await channel.connect()
-        voice.play(discord.FFmpegPCMAudio(await download(url)))
+        voice.play(discord.FFmpegPCMAudio(await download(url), executable="data/ffmpeg.exe"))
         await ctx.channel.send("Песня воспроизводится.")
 
 
