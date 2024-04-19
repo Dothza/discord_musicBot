@@ -5,5 +5,5 @@ PARAMS = {'extract_audio': True, 'format': 'bestaudio', 'outtmpl': '%(title)s.mp
 
 async def download(url):
     downloader = dlp.YoutubeDL(PARAMS)
-    data = downloader.extract_info(url, download=True)
-    return data
+    data = downloader.extract_info(url, download=False)
+    return data["url"]
