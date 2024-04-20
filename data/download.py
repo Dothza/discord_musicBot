@@ -13,4 +13,4 @@ async def download(url):
     #            queue.append(await download(i["url"]))
     #        return queue
     # except KeyError:
-    return data["url"]
+    return data

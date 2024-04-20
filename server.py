@@ -36,8 +36,8 @@ class DiscordPlay(commands.Cog):
             await voice.move_to(channel)
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
-        voice.play(discord.FFmpegPCMAudio(queue, executable="data/ffmpeg.exe"))
-        await ctx.channel.send("Песня воспроизводится.")
+        voice.play(discord.FFmpegPCMAudio(queue["url"], executable="data/ffmpeg.exe"))
+        await ctx.channel.send(f"{queue['title']} - воспроизводится.")
 
     @commands.command(name="stop")
     async def stop_music(self, ctx):
