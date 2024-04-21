@@ -5,12 +5,12 @@ PARAMS = {'extract_audio': True, 'format': 'bestaudio', '--skip-unavailable-frag
 
 async def download(url):
     downloader = dlp.YoutubeDL(PARAMS)
-    # queue = []
+    queue = []
     data = downloader.extract_info(url, download=False)
-    # try:
-    #    if data["_type"] == "playlist":
-    #        for i in data["entries"]:
-    #            queue.append(await download(i["url"]))
-    #        return queue
-    # except KeyError:
-    return data
+    try:
+        if data["_type"] == "playlist":
+            for i in data["entries"]:
+                queue.append(i["url"])
+            return queue
+    except KeyError:
+        return data["url"]

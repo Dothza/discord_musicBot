@@ -36,7 +36,7 @@ class DiscordPlay(commands.Cog):
             await voice.move_to(channel)
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
-        voice.play(discord.FFmpegPCMAudio(queue["url"], executable="data/ffmpeg.exe"))
+        voice.play(discord.FFmpegPCMAudio(queue, executable="data/ffmpeg.exe"))
         await ctx.channel.send(f"{queue['title']} - воспроизводится.")
 
     @commands.command(name="stop")
@@ -47,12 +47,13 @@ class DiscordPlay(commands.Cog):
 
     @commands.command(name="kick")
     @commands.has_permissions(administration=True)
-    async def kick(self, ctx, membre: discord.Member, *, reason=None):
+    async def kick(self, ctx, member: discord.Member, *, reason=None):
         await ctx.channel.purge(limit=1)
-        await membre.kick(reason=reason)
+        await member.kick(reason=reason)
+        await ctx.channel.send(f"{member} был кикнут с сервера.")
 
 
-TOKEN = "TOKEN"
+TOKEN = "BOTTOKEN"
 
 bot = commands.Bot(command_prefix="$", intents=intents)
 
