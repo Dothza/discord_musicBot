@@ -1,16 +1,27 @@
 import yt_dlp as dlp
-
+from data.song import Song
+from data.db_session import *
 PARAMS = {'extract_audio': True, 'format': 'bestaudio', '--skip-unavailable-fragments': True, "extract_flat": True}
 
 
 async def download(url):
     downloader = dlp.YoutubeDL(PARAMS)
-    queue = []
     data = downloader.extract_info(url, download=False)
     try:
         if data["_type"] == "playlist":
             for i in data["entries"]:
-                queue.append(i["url"])
-            return queue
+                song = Song()
+                song.name = i["titile"]
+                song.link = download(i["url"])
+                song.playlist_link = url
+                song.playlist_name = data["title"]
+                db_sess = create_session()
+                db_sess.add(song)
+                db_sess.commit()
     except KeyError:
-        return data["url"]
+        song = Song()
+        song.name = data["titile"]
+        song.link = data["url"]
+        db_sess = create_session()
+        db_sess.add(song)
+        db_sess.commit()
