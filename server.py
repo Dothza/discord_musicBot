@@ -45,8 +45,14 @@ class DiscordPlay(commands.Cog):
         voice.stop()
         await ctx.channel.send("Воспроизведение остановлено.")
 
+    @commands.command(name="kick")
+    @commands.has_permissions(administration=True)
+    async def kick(self, ctx, membre: discord.Member, *, reason=None):
+        await ctx.channel.purge(limit=1)
+        await membre.kick(reason=reason)
 
-TOKEN = "BOTTOKEN"
+
+TOKEN = "TOKEN"
 
 bot = commands.Bot(command_prefix="$", intents=intents)
 
