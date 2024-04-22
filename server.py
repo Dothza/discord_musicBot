@@ -21,9 +21,12 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 intents = discord.Intents.all()
-
-os.remove("db/base.db")
-db_session.global_init("db/base.db")
+try:
+    os.remove("db/base.db")
+except FileNotFoundError:
+    pass
+finally:
+    db_session.global_init("db/base.db")
 
 
 class DiscordPlay(commands.Cog):
