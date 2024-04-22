@@ -2,16 +2,16 @@
 
 
 import asyncio
+import logging
+import random
 import discord
 import discord.message
 from data.download import download
 from discord.ext import commands
-import logging
 from discord.utils import get
-import random
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
@@ -22,11 +22,6 @@ intents = discord.Intents.all()
 class DiscordPlay(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.command(name="info")
-    async def help(self, ctx):
-        await ctx.channel.send(
-            "Музыкальный бот Discord\nКоманда $play - включить песню\nКоманда $stop - остановить воспроизведение.")
 
     @commands.command(name="play")
     async def music(self, ctx, url):
@@ -40,21 +35,47 @@ class DiscordPlay(commands.Cog):
         voice.play(discord.FFmpegPCMAudio(queue, executable="data/ffmpeg.exe"))
         await ctx.channel.send(f"{queue['title']} - воспроизводится.")
 
+    @commands.command(name="info")
+    async def help(self, ctx):
+        await ctx.channel.send(
+            "Музыкальный бот Discord\nКоманда $play - включить песню\nКоманда $stop - остановить воспроизведение.")
+
     @commands.command(name="stop")
     async def stop_music(self, ctx):
         voice = get(self.bot.voice_clients, guild=ctx.guild)
-        voice.stop()
-        await ctx.channel.send("Воспроизведение остановлено.")
+        if voice:
+            voice.stop()
+            await ctx.channel.send("Воспроизведение остановлено.")
+        else:
+            await ctx.channel.send("Ничего не проигрывается.")
+
+    @commands.command(name="pause")
+    async def pause_music(self, ctx):
+        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        if voice:
+            voice.pause()
+            await ctx.channel.send("Воспроизведение приостановлено.")
+        else:
+            await ctx.channel.send("Ничего не проигрывается.")
+
+    @commands.command(name="resume")
+    async def resume_music(self, ctx):
+        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        if voice and voice.is_paused():
+            voice.resume()
+            await ctx.channel.send("Воспроизведение возобновлено.")
+        else:
+            await ctx.channel.send("Ничего не проигрывается.")
 
     @commands.command(name="kick")
-    # @commands.has_permissions(administration=True)
+    @commands.has_permissions(administration=True)
     async def kick(self, ctx, member: discord.Member, *, reason=None):
         await ctx.channel.purge(limit=1)
         await member.kick(reason=reason)
         await ctx.channel.send(f"{member} был кикнут с сервера.")
 
-    @commands.command(name="prikol")
-    async def music(self, ctx):
+    @commands.command(name="joke")
+    async def rickroll(self, ctx):
         channel = ctx.message.author.voice.channel
         voice = get(self.bot.voice_clients, guild=ctx.guild)
         queue = await download("https://youtu.be/dQw4w9WgXcQ?si=NcPkSTzU4pe7SDsv")
@@ -63,9 +84,9 @@ class DiscordPlay(commands.Cog):
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
         voice.play(discord.FFmpegPCMAudio(queue, executable="data/ffmpeg.exe"))
-        await ctx.channel.send("You have been rickrolled:)")
+        await ctx.channel.send("You have been rickrolled :)")
 
-    @commands.command(name="ochko")
+    @commands.command(name="game")
     async def game(self, ctx, cards_col):
         cards = {"черви_6": 6, "черви_7": 7, "черви_8": 8, "черви_9": 9, "черви_10": 10, "черви_валет": 1,
                  "черви_дама": 2, "черви_kороль": 3, "черви_туз": 11,
@@ -108,7 +129,7 @@ class DiscordPlay(commands.Cog):
             await ctx.channel.send("Неподходящее число")
 
 
-TOKEN = "BOT_TOKEN"
+TOKEN = "TOKEN_BOT"
 
 bot = commands.Bot(command_prefix="$", intents=intents)
 
