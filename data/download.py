@@ -1,10 +1,11 @@
 import yt_dlp as dlp
 from data.song import Song
 from data.db_session import *
+
 PARAMS = {'extract_audio': True, 'format': 'bestaudio', '--skip-unavailable-fragments': True, "extract_flat": True}
 
 
-def download(url):
+async def download(url):
     downloader = dlp.YoutubeDL(PARAMS)
     data = downloader.extract_info(url, download=False)
     try:
@@ -25,3 +26,4 @@ def download(url):
         db_sess = create_session()
         db_sess.add(song)
         db_sess.commit()
+    return

@@ -3,12 +3,16 @@
 
 import asyncio
 import logging
+import os
 import random
 import discord
 import discord.message
 from data.download import download
 from discord.ext import commands
 from discord.utils import get
+from data import db_session
+from data.db_session import *
+from data.song import Song
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
@@ -18,22 +22,50 @@ logger.addHandler(handler)
 
 intents = discord.Intents.all()
 
+os.remove("db/base.db")
+db_session.global_init("db/base.db")
+
 
 class DiscordPlay(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.current_song = None
 
     @commands.command(name="play")
     async def music(self, ctx, url):
         channel = ctx.message.author.voice.channel
         voice = get(self.bot.voice_clients, guild=ctx.guild)
-        queue = await download(url)
+        await download(url)
         if voice and voice.is_connected():
             await voice.move_to(channel)
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
-        voice.play(discord.FFmpegPCMAudio(queue["url"], executable="data/ffmpeg.exe"))
-        await ctx.channel.send(f"{queue['title']} - воспроизводится.")
+        await self.start_song()
+        voice.play(discord.FFmpegPCMAudio(self.current_song.link, executable="data/ffmpeg.exe"))
+        await ctx.channel.send(f"{self.current_song.name} - воспроизводится.")
+
+    async def start_song(self):
+        db_session = create_session()
+        if self.current_song:
+            self.current_song = db_session.query(Song).filter(Song.id == self.current_song.id + 1)[0]
+        else:
+            self.current_song = db_session.query(Song).filter(Song.id == 1)[0]
+
+    @commands.command(name="skip")
+    async def skip_song(self, ctx):
+        db_session = create_session()
+        voice = get(self.bot.voice_clients, guild=ctx.guild)
+        if self.current_song:
+            try:
+                self.current_song = db_session.query(Song).filter(Song.id == self.current_song.id + 1)[0]
+            except IndexError:
+                await ctx.channel.send("Очередь пуста.")
+        else:
+            self.current_song = db_session.query(Song).filter(Song.id == 1)[0]
+        if voice.is_playing:
+            voice.stop()
+            voice.play(discord.FFmpegPCMAudio(self.current_song.link, executable="data/ffmpeg.exe"))
+            await ctx.channel.send(f"{self.current_song.name} - воспроизводится.")
 
     @commands.command(name="info")
     async def help(self, ctx):
@@ -42,12 +74,15 @@ class DiscordPlay(commands.Cog):
 
     @commands.command(name="stop")
     async def stop_music(self, ctx):
+        db_session = create_session()
         voice = get(self.bot.voice_clients, guild=ctx.guild)
         if voice:
             voice.stop()
             await ctx.channel.send("Воспроизведение остановлено.")
         else:
             await ctx.channel.send("Ничего не проигрывается.")
+        db_session.query(Song).delete()
+        db_session.commit()
 
     @commands.command(name="pause")
     async def pause_music(self, ctx):
