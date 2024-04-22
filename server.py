@@ -32,7 +32,7 @@ class DiscordPlay(commands.Cog):
             await voice.move_to(channel)
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
-        voice.play(discord.FFmpegPCMAudio(queue, executable="data/ffmpeg.exe"))
+        voice.play(discord.FFmpegPCMAudio(queue["url"], executable="data/ffmpeg.exe"))
         await ctx.channel.send(f"{queue['title']} - воспроизводится.")
 
     @commands.command(name="info")
@@ -68,7 +68,7 @@ class DiscordPlay(commands.Cog):
             await ctx.channel.send("Ничего не проигрывается.")
 
     @commands.command(name="kick")
-    @commands.has_permissions(administration=True)
+    @commands.has_permissions(administrator=True)
     async def kick(self, ctx, member: discord.Member, *, reason=None):
         await ctx.channel.purge(limit=1)
         await member.kick(reason=reason)
@@ -129,7 +129,7 @@ class DiscordPlay(commands.Cog):
             await ctx.channel.send("Неподходящее число")
 
 
-TOKEN = "TOKEN_BOT"
+TOKEN = "BOT_TOKEN"
 
 bot = commands.Bot(command_prefix="$", intents=intents)
 

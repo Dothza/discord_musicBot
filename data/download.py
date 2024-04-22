@@ -10,7 +10,7 @@ async def download(url):
     try:
         if data["_type"] == "playlist":
             for i in data["entries"]:
-                queue.append(i["url"])
+                queue.append(i)
             return queue
     except KeyError:
-        return data["url"]
+        return data
