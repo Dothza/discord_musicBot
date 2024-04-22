@@ -169,7 +169,7 @@ class DiscordPlay(commands.Cog):
 
 TOKEN = "BOT_TOKEN"
 
-bot = commands.Bot(command_prefix="$", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 
 async def main():
