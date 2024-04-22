@@ -14,13 +14,15 @@ from data import db_session
 from data.db_session import *
 from data.song import Song
 
+OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+           'options': '-vn -filter:a "volume=0.25"'}
+
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-intents = discord.Intents.all()
 try:
     os.remove("db/base.db")
 except FileNotFoundError:
@@ -44,7 +46,7 @@ class DiscordPlay(commands.Cog):
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
         await self.start_song()
-        voice.play(discord.FFmpegPCMAudio(self.current_song.link, executable="data/ffmpeg.exe"))
+        voice.play(discord.FFmpegOpusAudio(self.current_song.link, executable="data/ffmpeg.exe", **OPTIONS))
         await ctx.channel.send(f"{self.current_song.name} - воспроизводится.")
 
     async def start_song(self):
@@ -58,16 +60,17 @@ class DiscordPlay(commands.Cog):
     async def skip_song(self, ctx):
         db_session = create_session()
         voice = get(self.bot.voice_clients, guild=ctx.guild)
-        if self.current_song:
-            try:
+        try:
+            if self.current_song:
                 self.current_song = db_session.query(Song).filter(Song.id == self.current_song.id + 1)[0]
-            except IndexError:
-                await ctx.channel.send("Очередь пуста.")
-        else:
+            else:
+                self.current_song = db_session.query(Song).filter(Song.id == 1)[0]
+        except IndexError:
+            await ctx.channel.send("Очередь пуста. Начинаю сначала.")
             self.current_song = db_session.query(Song).filter(Song.id == 1)[0]
         if voice.is_playing:
             voice.stop()
-            voice.play(discord.FFmpegPCMAudio(self.current_song.link, executable="data/ffmpeg.exe"))
+            voice.play(discord.FFmpegOpusAudio(self.current_song.link, executable="data/ffmpeg.exe", **OPTIONS))
             await ctx.channel.send(f"{self.current_song.name} - воспроизводится.")
 
     @commands.command(name="info")
@@ -121,7 +124,7 @@ class DiscordPlay(commands.Cog):
             await voice.move_to(channel)
         else:
             voice = await channel.connect(reconnect=True, timeout=None)
-        voice.play(discord.FFmpegPCMAudio(queue, executable="data/ffmpeg.exe"))
+        voice.play(discord.FFmpegOpusAudio(queue, executable="data/ffmpeg.exe", **OPTIONS))
         await ctx.channel.send("You have been rickrolled :)")
 
     @commands.command(name="game")
@@ -168,6 +171,7 @@ class DiscordPlay(commands.Cog):
 
 
 TOKEN = "BOT_TOKEN"
+intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
