@@ -26,7 +26,8 @@ class DiscordPlay(commands.Cog):
     @commands.command(name="info")
     async def help(self, ctx):
         await ctx.channel.send(
-            "Музыкальный бот Discord\nКоманда $play - включить песню\nКоманда $stop - остановить воспроизведение.")
+            "Музыкальный бот Discord\nКоманда $play - включить песню\nКоманда $stop - остановить "
+            "воспроизведение.\nКоманда $game - начать игру в 21.")
 
     @commands.command(name="play")
     async def music(self, ctx, url):
