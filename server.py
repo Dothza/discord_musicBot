@@ -2,13 +2,15 @@
 
 
 import asyncio
+import logging
+import random
+
 import discord
 import discord.message
-from data.download import download
 from discord.ext import commands
-import logging
 from discord.utils import get
-import random
+
+from data.download import download
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -26,7 +28,8 @@ class DiscordPlay(commands.Cog):
     @commands.command(name="info")
     async def help(self, ctx):
         await ctx.channel.send(
-            "Музыкальный бот Discord\nКоманда $play - включить песню\nКоманда $stop - остановить воспроизведение.")
+            "Музыкальный бот Discord\nКоманда $play - включить песню\nКоманда $stop - остановить "
+            "воспроизведение.\nКоманда $game - начать играть в очко(21).")
 
     @commands.command(name="play")
     async def music(self, ctx, url):
